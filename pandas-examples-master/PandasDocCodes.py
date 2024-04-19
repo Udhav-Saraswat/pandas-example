@@ -73,7 +73,7 @@ var = titanic.iloc[9:25, 2:5]
 
 # plotting in graph
 air_quality = pd.read_csv("data/airQualityData.csv", index_col=0, parse_dates=True)
-
+"""
 air_quality.head()
 
 air_quality.plot()
@@ -88,3 +88,99 @@ plt.show()
 
 air_quality.plot.box()
 plt.show()
+"""
+
+# add columns
+air_quality["new_col"] = air_quality["station_london"]*1000
+
+print(air_quality)
+
+
+# rename col
+air_quality_renamed = air_quality.rename(
+    columns={
+        "station_antwerp": "BETR801",
+        "station_paris": "FR04014",
+        "station_london": "London Westminster",
+    }
+)
+
+print(air_quality_renamed)
+
+# stats
+titanic[["Age", "Fare"]].median()
+
+titanic[["Age", "Fare"]].describe()
+
+titanic.agg(
+    {
+        "Age": ["min", "max", "median", "skew"],
+        "Fare": ["min", "max", "median", "mean"],
+    }
+)
+
+
+# group by, selection of columns (rectangular brackets [] as usual)
+titanic[["Sex", "Age"]].groupby("Sex").mean()
+titanic.groupby("Sex").mean(numeric_only=True)
+titanic.groupby("Sex")["Age"].mean()
+titanic["Pclass"].value_counts() # same to titanic.groupby("Pclass")["Pclass"].count()
+
+
+# sorting
+titanic.sort_values(by="Age").head()
+
+titanic.sort_values(by=['Pclass', 'Age'], ascending=False).head()
+
+# filter for no2 data only , long to wide format
+air_quality = pd.read_csv("data/no2data.csv", index_col=0, parse_dates=True)
+
+no2 = air_quality[air_quality["parameter"] == "no2"]
+
+# use 2 measurements (head) for each location (groupby)
+no2_subset = no2.sort_index().groupby(["location"]).head(2)
+
+
+no2_subset.pivot(columns="location", values="value")
+
+no2.pivot(columns="location", values="value").plot()
+
+air_quality.pivot_table(
+    values="value",
+    index="location",
+    columns="parameter",
+    aggfunc="mean",
+    margins=True,
+)
+
+
+# Wide to long format, we add a new index to the DataFrame with reset_index()
+no2_pivoted = no2.pivot(columns="location", values="value").reset_index()
+no_2 = no2_pivoted.melt(id_vars="date.utc")
+
+
+#
+air_quality_no2 = pd.read_csv("data/air_quality_no2_long.csv",
+                              parse_dates=True)
+
+
+air_quality_no2 = air_quality_no2[["date.utc", "location",
+                                   "parameter", "value"]]
+
+
+air_quality_no2.head()
+
+air_quality_pm25 = pd.read_csv("data/air_quality_pm25_long.csv",
+                               parse_dates=True)
+
+
+air_quality_pm25 = air_quality_pm25[["date.utc", "location",
+                                     "parameter", "value"]]
+
+
+#How to combine data from multiple tables
+
+air_quality = pd.concat([air_quality_pm25, air_quality_no2], axis=0)
+print(air_quality.head())
+
+
