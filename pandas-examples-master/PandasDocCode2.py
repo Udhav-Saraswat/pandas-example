@@ -75,7 +75,6 @@ plt.ylabel("$NO_2 (µg/m^3)$")
 
 
 # textual data manipulate
-
 titanic = pd.read_csv("data/titanic.csv")
 
 titanic["Name"].str.lower()
